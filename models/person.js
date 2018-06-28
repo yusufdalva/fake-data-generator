@@ -6,8 +6,6 @@ const personSchema = mongoose.Schema({
     email: String,
     joinDate: Date
 
-}, {
-    timestamps: true // mongoDB creates createdAt and updatedAt auto
 });
 
 module.exports = mongoose.model('Person', personSchema);
