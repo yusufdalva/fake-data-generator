@@ -17,6 +17,7 @@ mongoose.connect(dbConfig.url)
     console.log('Could not connect to the database. Exiting now...');
     process.exit();
 });
+var db = mongoose.connection;
 var i;
 var id;
 var name;
@@ -25,26 +26,21 @@ var iban;
 var balance;
 function personaccGenerator() {
 console.log("People and accounts are generating...")
-    var count = 0;
-    for (i = 0; i < 1000; i++) {
-        name = faker.name.findName();
-        birthday = faker.date.past();
+    var people = [];
+   for(var i=0;i<30000; i++) {
+       name = faker.name.findName();
+       birthday = faker.date.past();
+
+       const person = new Person({
+
+           name: name,
+           joinDate: birthday
+       });
+
+       people.push(person);
+   }
+    db.collection("people").insertMany(people, function(error, docs) {});
 
 
-        const person = new Person({
-
-            name: name,
-            joinDate: birthday
-        });
-
-        person.save((err, doc) => { // Yeni oluşturduğumuz satırı işleyelim.
-            if (err) {
-
-            } else {
-            }
-        })
-
-    }
-    console.log(i + " person generated.");
 }
 personaccGenerator();
