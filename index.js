@@ -18,61 +18,33 @@ mongoose.connect(dbConfig.url)
     process.exit();
 });
 var i;
+var id;
+var name;
+var birthday;
+var iban;
+var balance;
+function personaccGenerator() {
+console.log("People and accounts are generating...")
+    var count = 0;
+    for (i = 0; i < 1000; i++) {
+        name = faker.name.findName();
+        birthday = faker.date.past();
 
-for(i=0; i<30; i++) {
 
-var id = i;
-var name = faker.name.findName();
-var _email = faker.internet.email();
-var birthday = faker.date.past();
+        const person = new Person({
 
+            name: name,
+            joinDate: birthday
+        });
 
-const person = new Person({
-    id: id,
-    name: name,
-    email: _email,
-    joinDate: birthday
-});
-
-    person.save((err, doc) => { // Yeni oluşturduğumuz satırı işleyelim.
-        if (err) {
-            console.error(err)
-        } else {
-            console.log(doc)
-        }
-    })
-
-  var acc_number = 1 + Math.floor(Math.random() * 4);
-    var j;
-    for(j=1; j<=acc_number; j++) {
-
-        var iban = faker.finance.iban();
-        var balance =  faker.finance.amount();
-
-        const account = new Account({
-            id: id,
-            iban: iban,
-            balance: balance
-        })
-
-        account.save((err, doc) => { // Yeni oluşturduğumuz satırı işleyelim.
+        person.save((err, doc) => { // Yeni oluşturduğumuz satırı işleyelim.
             if (err) {
-                console.error(err)
+
             } else {
-                console.log(doc)
             }
         })
+
     }
-
- }
-
-
-
-/* simple get
-app.get('/', (req, res) => {
-    res.json({"message": "Hello there!"});
-});
-
-app.listen(3000, () => {
-    console.log("Server is listening on port 3000");
-});*/
+    console.log(i + " person generated.");
+}
+personaccGenerator();
