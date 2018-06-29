@@ -3,6 +3,7 @@ const app = express();
 const Person = require('./models/person.js');
 const Account = require('./models/account.js');
 const Transaction = require('./models/transaction.js');
+const Graph = require('./models/graph.js');
 // database configuration
 const dbConfig = require('./config/dbconfig');
 const mongoose = require('mongoose');
@@ -25,10 +26,12 @@ var name;
 var birthday;
 var iban;
 var balance;
-function personaccGenerator() {
+var userInput;
+
+function personaccGenerator(pNumber) {
 console.log("People and accounts are generating...")
     var people = [];
-   for(var i=0;i<30000; i++) {
+   for(var i=0;i<pNumber; i++) {
        name = faker.name.findName();
        birthday = faker.date.past();
 
@@ -45,10 +48,9 @@ console.log("People and accounts are generating...")
 
 }
 
-
 function allIds() {
    Person.find().distinct('_id', function(error, ids) {
-        accountGenerator(ids)
+        return ids;
     });
 }
 function allIban() {
@@ -56,7 +58,6 @@ function allIban() {
         transactionGenerator(iban);
     });
 }
-allIban();
 
 function accountGenerator(personId) {
     var accounts = [];
@@ -81,7 +82,7 @@ function accountGenerator(personId) {
 }
 
 function transactionGenerator(accIban) {
-    console.log(accIban.length);
+    //console.log(accIban.length);
     var transactions = [];
     for(var t=0;t<200000;t++) {
         var senderIban =  Math.floor(Math.random() * accIban.length);
@@ -101,17 +102,38 @@ function transactionGenerator(accIban) {
         })
         transactions.push(transaction);
     }
-    console.log(transactions.length);
-    let str = "\"transactions\": [";
-    for(let v = 0; v < transactions.length; v++)
-    {
-        str = str + JSON.stringify(transactions[v]);
-    }
-    str = str + "]";
-    let fs = require("fs");
-    fs.writeFile("sample.json", str, (err) => {
-        if(err) throw err;
-    });
+   // console.log(transactions.length);
+
     db.collection("transactions").insertMany(transactions, function(error, docs) {});
 
 }
+
+function graphGenerator(){
+
+    const newData ({
+        graph: {
+            mode: "NORMAL",
+            vertices: [
+                {
+                    TC: "2023",
+                    iban: "1111",
+                    amount: "65214"
+                },
+                {
+                    TC: "2023",
+                    iban: "2222",
+                    amount: "25000"
+                }
+            ],
+            edges: [{
+                senderIban: "1111",
+                receiverIban: "2222"
+            }]
+        }
+    })
+
+    console.log(JSON.stringify(newData));
+
+}
+
+graphGenerator();
