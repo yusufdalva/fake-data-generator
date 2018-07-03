@@ -28,6 +28,9 @@ var iban;
 var balance;
 var userInput;
 
+
+// PERSON GENERATOR
+
 function personaccGenerator(pNumber) {
 console.log("People and accounts are generating...")
     var people = [];
@@ -55,9 +58,10 @@ function allIds() {
 }
 function allIban() {
     Account.find().distinct('iban', function(error, iban) {
-        transactionGenerator(iban);
+        return iban;
     });
 }
+
 
 function accountGenerator(personId) {
     var accounts = [];
@@ -108,32 +112,33 @@ function transactionGenerator(accIban) {
 
 }
 
-function graphGenerator(){
 
-    const newData ({
-        graph: {
-            mode: "NORMAL",
-            vertices: [
-                {
-                    TC: "2023",
-                    iban: "1111",
-                    amount: "65214"
-                },
-                {
-                    TC: "2023",
-                    iban: "2222",
-                    amount: "25000"
-                }
-            ],
-            edges: [{
-                senderIban: "1111",
-                receiverIban: "2222"
-            }]
-        }
-    })
+function graphGenerator() {
 
-    console.log(JSON.stringify(newData));
+       Transaction.find(function(err,doc) {
+           for(var u=0; u <= 0; u++) {
 
-}
+               var newData = {
+                   mode: "NORMAL",
+                   vertices: [],
+                   edges: []
+               };
+
+                var sender =
+                    Account.find({iban: doc[u].senderIban}, function(err,res) {
+
+                        newData.vertices.push({
+                        TC: res[0].id,
+                        Iban: res[0].iban,
+                        Amount: res[0].balance
+                    });
+
+                });
+               console.log(JSON.stringify(newData));
+
+           }
+        });
+
+    }
 
 graphGenerator();
