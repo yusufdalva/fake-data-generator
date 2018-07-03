@@ -7,7 +7,7 @@ const Graph = require('./models/graph.js');
 // database configuration
 const dbConfig = require('./config/dbconfig');
 const mongoose = require('mongoose');
-var faker = require('faker');
+const faker = require('faker');
 faker.locale = "tr";
 mongoose.Promise = global.Promise;
 
@@ -19,20 +19,17 @@ mongoose.connect(dbConfig.url)
     console.log('Could not connect to the database. Exiting now...');
     process.exit();
 });
-var db = mongoose.connection;
-var i;
-var id;
-var name;
-var birthday;
-var iban;
-var balance;
-var userInput;
+let db = mongoose.connection;
+
+let name;
+let birthday;
+let iban;
 
 
 // PERSON GENERATOR
 
 function personaccGenerator(pNumber) {
-console.log("People and accounts are generating...")
+console.log("People and accounts are generating...");
     var people = [];
    for(var i=0;i<pNumber; i++) {
        name = faker.name.findName();
@@ -78,7 +75,7 @@ function accountGenerator(personId) {
                 id: personId[k],
                 iban: iban,
                 balance: balance
-            })
+            });
             accounts.push(account);
         }
     }
@@ -103,7 +100,7 @@ function transactionGenerator(accIban) {
             senderIban: accIban[senderIban],
             receiverIban: accIban[receiverIban],
             amount: amount
-        })
+        });
         transactions.push(transaction);
     }
    // console.log(transactions.length);
@@ -112,33 +109,87 @@ function transactionGenerator(accIban) {
 
 }
 
+/*var newData = {
+    mode: "NORMAL",
+    vertices: [],
+    edges: []
+};*/
+
+var test = {
+
+    data: {
+        mode: "NORMAL",
+        vertices: [],
+        edges: []
+    },
+    addVertices: function (x) {
+        this.data.vertices.push(x);
+    },
+    addEdge: function (x) {
+        this.data.edges.push(x);
+    },
+    endOfOperation: function () {
+        console.log(this.data);
+    }
+}
 
 function graphGenerator() {
 
        Transaction.find(function(err,doc) {
-           for(var u=0; u <= 0; u++) {
 
-               var newData = {
-                   mode: "NORMAL",
-                   vertices: [],
-                   edges: []
-               };
+           var newData = {
+               mode: "NORMAL",
+               vertices: [],
+               edges: []
+           };
+            var endLoop = 200000;
+           for(var u=0; u < endLoop; u++) {
 
-                var sender =
-                    Account.find({iban: doc[u].senderIban}, function(err,res) {
+               try {
+                   test.addEdge({
+                       senderIban: doc[u].senderIban,
+                       receiverIban: doc[u].receiverIban,
+                       Amount: doc[u].amount
+                   });
+               }
+               catch (e) {
+                   console.log("");
+               }
+                   Account.find({iban: doc[u].senderIban}, function(err,res) {
 
-                        newData.vertices.push({
-                        TC: res[0].id,
-                        Iban: res[0].iban,
-                        Amount: res[0].balance
-                    });
+                       test.addVertices({
+                           TC: res[0].id,
+                           Iban: res[0].iban,
+                           Amount: res[0].balance
+                       });
+                       if (u = endLoop)
+                       {
+                           test.endOfOperation();
+                       }
 
                 });
-               console.log(JSON.stringify(newData));
+                  /* Account.find({iban: doc[u].receiverIban}, function(err,res) {
+
+                       newData.vertices.push({
+                           TC: res[0].id,
+                           Iban: res[0].iban,
+                           Amount: res[0].balance
+                       });
+
+                   });
+*/
 
            }
+
+           console.log(test);
         });
 
     }
 
 graphGenerator();
+
+function dataViewer() {
+
+}
+
+setTimeout(dataViewer,10000);
