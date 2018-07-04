@@ -11,7 +11,7 @@ const faker = require('faker');
 faker.locale = "tr";
 mongoose.Promise = global.Promise;
 let count = 0;
-
+const fs = require('fs');
 // connecting to the database
 mongoose.connect(dbConfig.url)
     .then(() => {
@@ -130,9 +130,18 @@ var test = {
     }
 }
 
+function myWrite(_data) {
+
+    _data = JSON.stringify(_data);
+    fs.appendFile('output.json', _data, function (err) {
+        if (err) { /* Do whatever is appropriate if append fails*/ }
+    });
+}
+
 function ended() {
     console.log("vertices:" + test.data.vertices.length);
     console.log("edges:" + test.data.edges.length);
+    myWrite(test.data);
 }
 
 function AddNewData(obj,arr,next) {
@@ -149,15 +158,21 @@ function AddNewData(obj,arr,next) {
             Amount: res[0].balance
         });
 
-        if (arr[next + 1] != undefined) {
+    });
+        Account.find({iban: obj.receiverIban}, function(err,_res) {
+            test.addVertices({
+                TC: _res[0].id,
+                Iban: _res[0].iban,
+                Amount: _res[0].balance
+            });
+        });
+        if (next < 49999) {
             count++;
-            console.log(count);
-
             AddNewData(arr[next + 1], arr, next + 1);
         }
         else
-            ended();
-    });
+            setTimeout(ended, 10000);
+
 }
 
 
@@ -170,9 +185,7 @@ function graphGenerator() {
             mode: "NORMAL",
             vertices: [],
             edges: []
-        };
-        var endLoop = 50;
-        console.log(endLoop);
+        }
         var u = 0;
         AddNewData(doc[u],doc,u);
     });
@@ -185,4 +198,3 @@ function dataViewer() {
 
 }
 
-setTimeout(dataViewer,10000);
