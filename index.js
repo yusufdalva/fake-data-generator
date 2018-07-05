@@ -51,12 +51,12 @@ function personaccGenerator(pNumber) {
 
 function allIds() {
     Person.find().distinct('_id', function(error, ids) {
-        return ids;
+        accountGenerator(ids);
     });
 }
 function allIban() {
     Account.find().distinct('iban', function(error, iban) {
-        return iban;
+        transactionGenerator(iban);
     });
 }
 
@@ -134,7 +134,7 @@ function myWrite(_data) {
 
     _data = JSON.stringify(_data);
     fs.appendFile('output.json', _data, function (err) {
-        if (err) { /* Do whatever is appropriate if append fails*/ }
+           if (err) { /* Do whatever is appropriate if append fails*/ }
     });
 }
 
@@ -144,14 +144,14 @@ function ended() {
     myWrite(test.data);
 }
 
-function AddNewData(obj,arr,next) {
-    test.addEdge({
+async function AddNewData(obj) {
+    await test.addEdge({
         senderIban: obj.senderIban,
         receiverIban: obj.receiverIban,
         Amount: obj.amount
     });
 
-    Account.find({iban: obj.senderIban}, function(err,res) {
+   await Account.find({iban: obj.senderIban}, function(err,res) {
         test.addVertices({
             TC: res[0].id,
             Iban: res[0].iban,
@@ -159,36 +159,27 @@ function AddNewData(obj,arr,next) {
         });
 
     });
-        Account.find({iban: obj.receiverIban}, function(err,_res) {
+      await  Account.find({iban: obj.receiverIban}, function(err,_res) {
             test.addVertices({
                 TC: _res[0].id,
                 Iban: _res[0].iban,
                 Amount: _res[0].balance
             });
         });
-        if (next < 49999) {
-            count++;
-            AddNewData(arr[next + 1], arr, next + 1);
-        }
-        else
-            setTimeout(ended, 10000);
 
 }
 
 
 
-function graphGenerator() {
-
-    Transaction.find(function(err,doc) {
-
-        var newData = {
-            mode: "NORMAL",
-            vertices: [],
-            edges: []
-        }
-        var u = 0;
-        AddNewData(doc[u],doc,u);
+async function graphGenerator() {
+        var transId;
+    await Transaction.find(function(err,doc) {
+        transId = doc;
     });
+    for(var i=0;i<5000;i++) {
+        AddNewData(transId);
+    }
+    setTimeout(ended, 10000);
 
 }
 
