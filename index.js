@@ -1,17 +1,17 @@
-const express = require('express');
-const app = express();
 const Person = require('./models/person.js');
 const Account = require('./models/account.js');
 const Transaction = require('./models/transaction.js');
-/*const Graph = require('./models/graph.js');*/
+
 // database configuration
 const dbConfig = require('./config/dbconfig');
 const mongoose = require('mongoose');
+
 const faker = require('faker');
 faker.locale = "tr";
-mongoose.Promise = global.Promise;
-let count = 0;
 const fs = require('fs');
+mongoose.Promise = global.Promise;
+
+
 // connecting to the database
 mongoose.connect(dbConfig.url)
     .then(() => {
@@ -23,23 +23,23 @@ mongoose.connect(dbConfig.url)
 let db = mongoose.connection;
 
 let name;
-let birthday;
+let joinDate;
 let iban;
 
 
 // PERSON GENERATOR
-
-function personaccGenerator(pNumber) {
+// Input: Number of person to generate
+function personGenerator(pNumber) {
     console.log("People and accounts are generating...");
-    var people = [];
-    for(var i=0;i<pNumber; i++) {
+    let people = [];
+    for(let i=0;i<pNumber; i++) {
         name = faker.name.findName();
-        birthday = faker.date.past();
+        joinDate = faker.date.past();
 
         const person = new Person({
 
             name: name,
-            joinDate: birthday
+            joinDate: joinDate
         });
 
         people.push(person);
@@ -62,15 +62,15 @@ function allIban() {
 
 
 function accountGenerator(personId) {
-    var accounts = [];
-    for(var k=0; k<personId.length; k++  ) {
+     let accounts = [];
+    for(let k=0; k<personId.length; k++  ) {
 
-        var acc_number = 1 + Math.floor(Math.random() * 4);
-        var j;
+        let acc_number = 1 + Math.floor(Math.random() * 4);
+        let j;
         for (j = 1; j <= acc_number; j++) {
 
-            var iban = faker.finance.iban();
-            var balance = faker.finance.amount();
+            let iban = faker.finance.iban();
+            let balance = faker.finance.amount();
 
             const account = new Account({
                 id: personId[k],
@@ -144,7 +144,7 @@ function ended() {
     myWrite(test.data);
 }
 
-async function AddNewData(obj) {
+async function AddNewData(obj, arr, next) {
     await test.addEdge({
         senderIban: obj.senderIban,
         receiverIban: obj.receiverIban,
@@ -159,7 +159,7 @@ async function AddNewData(obj) {
         });
 
     });
-      await  Account.find({iban: obj.receiverIban}, function(err,_res) {
+     await Account.find({iban: obj.receiverIban}, function(err,_res) {
             test.addVertices({
                 TC: _res[0].id,
                 Iban: _res[0].iban,
@@ -167,19 +167,29 @@ async function AddNewData(obj) {
             });
         });
 
+    if (next < 1000) {
+        console.log(next);
+        AddNewData(arr[next + 1], arr, next + 1);
+
+    }
+    else
+        ended();
 }
 
 
 
 async function graphGenerator() {
-        var transId;
-    await Transaction.find(function(err,doc) {
-        transId = doc;
+
+   Transaction.find(function(err,doc) {
+
+        let i=0;
+            AddNewData(doc[i],doc,i);
+
+
+
     });
-    for(var i=0;i<5000;i++) {
-        AddNewData(transId);
-    }
-    setTimeout(ended, 10000);
+
+
 
 }
 
